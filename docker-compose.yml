@@ -1,0 +1,22 @@
+version: "3.8"
+volumes:
+  vuetuto-store:
+services:
+  app:
+    build: ./infra/php
+    ports:
+     - "${WEB_PORT}:80"
+    volumes:
+      - ./laravel:/var/www/html/laravel
+
+  db:
+    build: ./infra/mysql
+    ports:
+      - ${DB_PORT}:3306
+    volumes:
+      - vuetuto-store:/var/lib/mysql
+    environment:
+      - MYSQL_DATABASE=${DB_NAME} \
+      - MYSQL_USER=${DB_USER} \
+      - MYSQL_PASSWORD=${DB_PASS} \
+      - MYSQL_ROOT_PASSWORD=${DB_PASS}
