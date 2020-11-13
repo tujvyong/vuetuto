@@ -19,7 +19,7 @@ try {
  * CSRF token as a header based on the value of the "XSRF" token cookie.
  */
 
-import { getCookieValue } from './util'
+import { getCookieValue } from './utils/token'
 
 window.axios = require('axios');
 
