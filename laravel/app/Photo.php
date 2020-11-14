@@ -5,6 +5,7 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class Photo extends Model
 {
@@ -14,11 +15,11 @@ class Photo extends Model
 
 	// ユーザー定義のアクセサを JSON 表現に含めるためには、明示的に $appends プロパティに登録する必要がある。
 	protected $appends = [
-		'url',
+		'url', 'likes_count', 'liked_by_user',
 	];
 
 	protected $visible = [
-		'id', 'owner', 'url', 'comments',
+		'id', 'owner', 'url', 'comments', 'likes_count', 'liked_by_user',
 	];
 
 	protected $perPage = 15;
@@ -48,6 +49,12 @@ class Photo extends Model
 		return $this->hasMany('App\Comment')->orderBy('id', 'desc');
 	}
 
+	public function likes()
+	{
+		// withTimestamps はこのリレーションメソッドを使って likes テーブルにデータを挿入したとき、created_at および updated_at カラムを更新させるための指定
+		return $this->belongsToMany('App\User', 'likes')->withTimestamps();
+	}
+
 	public function getUrlAttribute()
 	{
 		return Storage::cloud()->url($this->attributes['filename']);
@@ -71,5 +78,21 @@ class Photo extends Model
 		}
 
 		return $id;
+	}
+
+	public function getLikesCountAttribute()
+	{
+		return $this->likes->count();
+	}
+
+	public function getLikedByUserAttribute()
+	{
+		if (Auth::guest()) {
+			return false;
+		}
+
+		return $this->likes->contains(function ($user) {
+			return $user->id === Auth::user()->id;
+		});
 	}
 }
