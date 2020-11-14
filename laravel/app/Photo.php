@@ -21,6 +21,8 @@ class Photo extends Model
 		'id', 'owner', 'url',
 	];
 
+	protected $perPage = 15;
+
 	// Photo 作成時に忘れずに setId を呼ばなくてはいけないのはデフォルトのルールと違っていて分かりにくい。そのためコンストラクタで自動的に setId を呼び出している。
 	public function __construct(array $attributes = [])
 	{
