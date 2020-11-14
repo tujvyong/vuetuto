@@ -15,12 +15,15 @@ COPY --from=composer:2.0 /usr/bin/composer /usr/bin/composer
 
 RUN apt-get update && \
     curl -sL https://deb.nodesource.com/setup_14.x | bash - && \
-    apt-get -y install git libicu-dev libonig-dev libzip-dev unzip locales nodejs && \
+    apt-get -y install git libicu-dev libonig-dev libzip-dev libpng-dev libfreetype6-dev libjpeg62-turbo-dev unzip locales nodejs && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     locale-gen en_US.UTF-8 && \
     localedef -f UTF-8 -i en_US en_US.UTF-8 && \
     docker-php-ext-install intl pdo_mysql zip bcmath && \
+    # gd can't enabled jpg file in Docker. following is the process to be enabled.
+    docker-php-ext-configure gd --with-freetype --with-jpeg && \
+    docker-php-ext-install -j$(nproc) gd && \
     composer config -g process-timeout 3600 && \
     composer config -g repos.packagist composer https://packagist.org && \
     npm install npm@latest -g
@@ -32,3 +35,6 @@ COPY ./apache.d/000-default.conf /etc/apache2/sites-enabled/
 COPY ./php.ini /usr/local/etc/php/php.ini
 
 WORKDIR /var/www/html/laravel
+
+# for gd module
+# libfreetype6-dev libpng-dev libjpeg62-turbo-dev
